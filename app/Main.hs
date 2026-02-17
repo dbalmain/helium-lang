@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Helium.Parser (parseExpr)
 import System.Console.Haskeline
 
 main :: IO ()
@@ -13,5 +14,7 @@ repl = do
   case minput of
     Nothing -> outputStrLn ""
     Just input -> do
-      outputStrLn input
+      case parseExpr input of
+        Right expr -> outputStrLn $ show expr
+        Left err -> outputStrLn $ "Error: " <> err
       repl
