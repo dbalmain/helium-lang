@@ -17,8 +17,9 @@ common warnings
 
 library
     import:           warnings
-    exposed-modules:  Helium.Syntax
+    exposed-modules:  Helium.Eval
                     , Helium.Parser
+                    , Helium.Syntax
     build-depends:    base >=4.14 && <5
                     , megaparsec >=9.0
                     , parser-combinators >=1.3
