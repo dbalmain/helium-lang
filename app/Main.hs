@@ -6,7 +6,7 @@ import System.Console.Haskeline
 
 main :: IO ()
 main = do
-  putStrLn "Helium Chapter 1 - Type an expression (Ctrl-D to quit)"
+  putStrLn "Helium Chapter 2 - Type an expression (Ctrl-D to quit)"
   runInputT defaultSettings repl
 
 repl :: InputT IO ()
@@ -16,8 +16,10 @@ repl = do
     Nothing -> outputStrLn ""
     Just input -> do
       case parseExpr input of
+        Left err -> outputStrLn $ "Parse Error: " <> err
         Right expr -> do
           outputStrLn $ show expr
-          outputStrLn . show $ eval expr
-        Left err -> outputStrLn $ "Error: " <> err
+          case eval expr of
+            Left err -> outputStrLn $ "Runtime Error: " <> err
+            Right result -> outputStrLn $ show result
       repl

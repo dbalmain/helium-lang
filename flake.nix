@@ -36,6 +36,7 @@
               tools = hp: {
                 inherit (hp)
                   cabal-install
+                  cabal-gild
                   haskell-language-server
                   hlint
                   fourmolu

@@ -1,36 +1,43 @@
-cabal-version:      3.0
-name:               helium
-version:            0.1.0.0
-synopsis:           A mini type-safe language built for learning
-homepage:           https://www.github.com/dbalmain/helium-lang
-license:            MIT
-license-file:       LICENSE
-author:             Dave Balmain
-maintainer:         dbalmain@gmail.com
-category:           Language
-build-type:         Simple
-extra-doc-files:    CHANGELOG.md
-                    README.md
+cabal-version: 3.0
+name: helium
+version: 0.1.0.0
+synopsis: A mini type-safe language built for learning
+homepage: https://www.github.com/dbalmain/helium-lang
+license: MIT
+license-file: LICENSE
+author: Dave Balmain
+maintainer: dbalmain@gmail.com
+category: Language
+build-type: Simple
+extra-doc-files:
+  CHANGELOG.md
+  README.md
 
 common warnings
-    ghc-options: -Wall
+  ghc-options: -Wall
 
 library
-    import:           warnings
-    exposed-modules:  Helium.Eval
-                    , Helium.Parser
-                    , Helium.Syntax
-    build-depends:    base >=4.14 && <5
-                    , megaparsec >=9.0
-                    , parser-combinators >=1.3
-    hs-source-dirs:   src
-    default-language: GHC2021
+  import: warnings
+  exposed-modules:
+    Helium.Eval
+    Helium.Parser
+    Helium.Syntax
+
+  build-depends:
+    base >=4.14 && <5,
+    megaparsec >=9.0,
+    parser-combinators >=1.3,
+
+  hs-source-dirs: src
+  default-language: GHC2021
 
 executable helium
-    import:           warnings
-    main-is:          Main.hs
-    build-depends:    base >=4.14 && <5
-                    , helium
-                    , haskeline >= 0.8
-    hs-source-dirs:   app
-    default-language: GHC2021
+  import: warnings
+  main-is: Main.hs
+  build-depends:
+    base >=4.14 && <5,
+    haskeline >=0.8,
+    helium,
+
+  hs-source-dirs: app
+  default-language: GHC2021
