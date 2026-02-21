@@ -32,9 +32,12 @@ keyword name = void . lexeme $ string name <* notFollowedBy alphaNumChar
 
 identifier :: Parser String
 identifier = lexeme $ do
+  pos <- getOffset
   name <- (:) <$> letterChar <*> many alphaNumChar
   if name `elem` keywords
-    then empty
+    then do
+      setOffset pos
+      fail $ "keyword " <> show name <> " cannot be used as an identifier"
     else pure name
 
 parens :: Parser a -> Parser a
@@ -59,7 +62,7 @@ term = parens expr <|> Var <$> identifier <|> Lit <$> integer
 letExpr :: Parser Expr
 letExpr = do
   keyword "let"
-  name <- identifier
+  name <- identifier <?> "identifier"
   _ <- symbol "="
   definition <- expr
   keyword "in"
