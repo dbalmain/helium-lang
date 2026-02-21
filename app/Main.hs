@@ -19,7 +19,7 @@ repl = do
         Left err -> outputStrLn $ "Parse Error: " <> err
         Right expr -> do
           outputStrLn $ show expr
-          case eval expr of
+          case eval mempty expr of
             Left err -> outputStrLn $ "Runtime Error: " <> err
             Right result -> outputStrLn $ show result
       repl
