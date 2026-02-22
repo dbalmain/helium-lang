@@ -40,6 +40,7 @@ executable helium
     containers,
     haskeline >=0.8,
     helium,
+    mtl,
 
   hs-source-dirs: app
   default-language: GHC2021
