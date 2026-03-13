@@ -10,6 +10,7 @@ The `main` branch is a skeleton. The real code lives on the chapter branches bel
 | --- | --- |
 | [`chapter/001`](https://github.com/dbalmain/helium-lang/tree/chapter/001) | 1 — Arithmetic expressions: parse and evaluate `1 + 2 * 3` |
 | [`chapter/002`](https://github.com/dbalmain/helium-lang/tree/chapter/002) | 2 — Variables and let bindings: `let x = 5 in x + 1` |
+| [`chapter/003`](https://github.com/dbalmain/helium-lang/tree/chapter/003) | 3 — Functions: `let double = \x -> x + 2 in double 5` |
 
 ## Toolchain
 
