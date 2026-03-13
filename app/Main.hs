@@ -6,7 +6,7 @@ import System.Console.Haskeline
 
 main :: IO ()
 main = do
-  putStrLn "Helium Chapter 2 - Type an expression (Ctrl-D to quit)"
+  putStrLn "Helium Chapter 3 - Type an expression (Ctrl-D to quit)"
   runInputT defaultSettings repl
 
 repl :: InputT IO ()

@@ -4,25 +4,43 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Helium.Syntax (Expr (..))
 
-type Env = Map String Int
+type Env = Map String Val
 
-binOp :: Env -> (Int -> Int -> Int) -> Expr -> Expr -> Either String Int
-binOp env op a b = op <$> eval env a <*> eval env b
+data Val
+  = VInt Int
+  | VClosure String Expr Env
+  deriving (Show)
 
-eval :: Env -> Expr -> Either String Int
+asInt :: Val -> Either String Int
+asInt (VInt x) = Right x
+asInt val = Left $ "Expected integer, got " <> show val
+
+binOp :: Env -> (Int -> Int -> Int) -> Expr -> Expr -> Either String Val
+binOp env op a b = do
+  a' <- eval env a >>= asInt
+  b' <- eval env b >>= asInt
+  Right . VInt $ op a' b'
+
+eval :: Env -> Expr -> Either String Val
 eval env expr = case expr of
-  (Lit x) -> Right x
-  (Var name) -> case Map.lookup name env of
-    Just x -> Right x
-    Nothing -> Left $ "Unbound variable: " <> name
-  (Let name definition body) -> do
+  Lit x -> Right $ VInt x
+  Var name -> maybe (Left $ "Unbound variable: " <> name) Right (Map.lookup name env)
+  Let name definition body -> do
     x <- eval env definition
     eval (Map.insert name x env) body
-  (Neg a) -> negate <$> eval env a
-  (Add a b) -> binOp env (+) a b
-  (Sub a b) -> binOp env (-) a b
-  (Mul a b) -> binOp env (*) a b
-  (Div a b) -> do
-    x <- eval env a
-    y <- eval env b
-    if y == 0 then Left "Division by 0" else Right $ x `div` y
+  Lam parameter body -> Right $ VClosure parameter body env
+  App fExpr argExpr -> do
+    f <- eval env fExpr
+    case f of
+      VClosure param body closureEnv -> do
+        arg <- eval env argExpr
+        eval (Map.insert param arg closureEnv) body
+      val -> Left $ "Expected closure, got " <> show val
+  Neg a -> VInt . negate <$> (eval env a >>= asInt)
+  Add a b -> binOp env (+) a b
+  Sub a b -> binOp env (-) a b
+  Mul a b -> binOp env (*) a b
+  Div a b -> do
+    x <- eval env a >>= asInt
+    y <- eval env b >>= asInt
+    if y == 0 then Left "Division by 0" else Right . VInt $ x `div` y
