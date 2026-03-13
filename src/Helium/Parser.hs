@@ -56,8 +56,18 @@ operatorTable =
     [binary "+" Add, binary "-" Sub]
   ]
 
+atom :: Parser Expr
+atom = parens expr <|> Lit <$> integer <|> Var <$> try identifier
+
 term :: Parser Expr
-term = parens expr <|> Var <$> identifier <|> Lit <$> integer
+term = foldl1 App <$> some atom
+
+lambdaExpr :: Parser Expr
+lambdaExpr = do
+  _ <- symbol "\\"
+  parameter <- identifier <?> "parameter"
+  _ <- symbol "->"
+  Lam parameter <$> expr
 
 letExpr :: Parser Expr
 letExpr = do
@@ -69,7 +79,7 @@ letExpr = do
   Let name definition <$> expr
 
 expr :: Parser Expr
-expr = letExpr <|> makeExprParser term operatorTable
+expr = letExpr <|> lambdaExpr <|> makeExprParser term operatorTable
 
 parseExpr :: String -> Either String Expr
 parseExpr input =

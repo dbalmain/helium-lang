@@ -4,6 +4,8 @@ data Expr
   = Lit Int
   | Var String
   | Let String Expr Expr
+  | Lam String Expr
+  | App Expr Expr
   | Neg Expr
   | Add Expr Expr
   | Sub Expr Expr
