@@ -19,6 +19,7 @@ common warnings
 library
   import: warnings
   exposed-modules:
+    Helium.Check
     Helium.Eval
     Helium.Parser
     Helium.Syntax

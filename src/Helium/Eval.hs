@@ -1,4 +1,4 @@
-module Helium.Eval (eval) where
+module Helium.Eval (eval, Val (..)) where
 
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
@@ -28,7 +28,7 @@ eval env expr = case expr of
   Let name definition body -> do
     x <- eval env definition
     eval (Map.insert name x env) body
-  Lam parameter body -> Right $ VClosure parameter body env
+  Lam parameter _ty body -> Right $ VClosure parameter body env
   App fExpr argExpr -> do
     f <- eval env fExpr
     case f of

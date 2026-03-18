@@ -4,7 +4,7 @@ import Control.Arrow (left)
 import Control.Monad (void)
 import Control.Monad.Combinators.Expr (Operator (InfixL, Prefix), makeExprParser)
 import Data.Void (Void)
-import Helium.Syntax (Expr (..))
+import Helium.Syntax (Expr (..), Type (..))
 import Text.Megaparsec
 import Text.Megaparsec.Char (alphaNumChar, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as L
@@ -56,6 +56,16 @@ operatorTable =
     [binary "+" Add, binary "-" Sub]
   ]
 
+-- Type parsing
+
+typeAtom :: Parser Type
+typeAtom = TInt <$ keyword "Int" <|> parens typeExpr
+
+typeExpr :: Parser Type
+typeExpr = foldr1 TFun <$> sepBy1 typeAtom (symbol "->")
+
+-- Expression parsing
+
 atom :: Parser Expr
 atom = parens expr <|> Lit <$> integer <|> Var <$> try identifier
 
@@ -65,9 +75,13 @@ term = foldl1 App <$> some atom
 lambdaExpr :: Parser Expr
 lambdaExpr = do
   _ <- symbol "\\"
+  _ <- symbol "("
   parameter <- identifier <?> "parameter"
+  _ <- symbol ":"
+  ty <- typeExpr
+  _ <- symbol ")"
   _ <- symbol "->"
-  Lam parameter <$> expr
+  Lam parameter ty <$> expr
 
 letExpr :: Parser Expr
 letExpr = do
