@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Helium.Check (typecheck)
+import Helium.Check (elaborate)
 import Helium.Eval (eval)
 import Helium.Parser (parseExpr)
 import System.Console.Haskeline
@@ -20,11 +20,11 @@ repl = do
         Left err -> outputStrLn $ "Parse Error: " <> err
         Right expr -> do
           outputStrLn $ show expr
-          case typecheck expr of
+          case elaborate expr of
             Left err -> outputStrLn $ "Type Error: " <> err
-            Right ty -> do
+            Right (ty, core) -> do
               outputStrLn $ "Type: " <> show ty
-              case eval mempty expr of
+              case eval mempty core of
                 Left err -> outputStrLn $ "Runtime Error: " <> err
                 Right result -> outputStrLn $ show result
       repl
