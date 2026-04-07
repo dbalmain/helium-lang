@@ -3,28 +3,32 @@ module Main (main) where
 import Helium.Check (elaborate)
 import Helium.Eval (eval)
 import Helium.Parser (parseExpr)
-import System.Console.Haskeline
+import System.Console.Isocline
+
+process :: String -> IO ()
+process input =
+  case parseExpr input of
+    Left err -> putStrLn $ "Parse Error: " <> err
+    Right expr -> do
+      print expr
+      case elaborate expr of
+        Left err -> putStrLn $ "Type Error: " <> err
+        Right (ty, core) -> do
+          putStrLn $ "Type: " <> show ty
+          case eval mempty core of
+            Left err -> putStrLn $ "Runtime Error: " <> err
+            Right result -> print result
+
+repl :: IO ()
+repl = do
+  minput <- readlineMaybe "he"
+  case minput of
+    Nothing -> putStrLn ""
+    Just input -> process input >> repl
 
 main :: IO ()
 main = do
-  putStrLn "Helium Chapter 4 - Type an expression (Ctrl-D to quit)"
-  runInputT defaultSettings repl
-
-repl :: InputT IO ()
-repl = do
-  minput <- getInputLine "h> "
-  case minput of
-    Nothing -> outputStrLn ""
-    Just input -> do
-      case parseExpr input of
-        Left err -> outputStrLn $ "Parse Error: " <> err
-        Right expr -> do
-          outputStrLn $ show expr
-          case elaborate expr of
-            Left err -> outputStrLn $ "Type Error: " <> err
-            Right (ty, core) -> do
-              outputStrLn $ "Type: " <> show ty
-              case eval mempty core of
-                Left err -> outputStrLn $ "Runtime Error: " <> err
-                Right result -> outputStrLn $ show result
-      repl
+  putStrLn "Helium Chapter 5 - Type an expression (Ctrl-D to quit, Ctrl-Enter for newline)"
+  setHistory "helium_history.txt" 200
+  _ <- enableMultiline True
+  repl

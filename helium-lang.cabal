@@ -40,8 +40,8 @@ executable helium
   build-depends:
     base >=4.14 && <5,
     containers,
-    haskeline >=0.8,
     helium,
+    isocline >=1.0,
 
   hs-source-dirs: app
   default-language: GHC2021

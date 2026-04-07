@@ -13,6 +13,7 @@ The `main` branch is a skeleton. The real code lives on the chapter branches bel
 | [`chapter/003`](https://github.com/dbalmain/helium-lang/tree/chapter/003) | 3 — Functions: `let double = \x -> x + 2 in double 5` |
 | [`chapter/004`](https://github.com/dbalmain/helium-lang/tree/chapter/004) | 4 — Simply-typed checking: `\(x : Int) -> x + 1` |
 | [`chapter/004b`](https://github.com/dbalmain/helium-lang/tree/chapter/004b) | 4b — GADTs vs System F: an alternative type-safe IR |
+| [`chapter/005`](https://github.com/dbalmain/helium-lang/tree/chapter/005) | 5 — Spans and errors: multi-line REPL (isocline) and source spans on the AST |
 
 ## Toolchain
 
