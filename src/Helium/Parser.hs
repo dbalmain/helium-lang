@@ -4,7 +4,7 @@ import Control.Arrow (left)
 import Control.Monad (void)
 import Control.Monad.Combinators.Expr (Operator (InfixL, Prefix), makeExprParser)
 import Data.Void (Void)
-import Helium.Syntax (Expr (..), Type (..))
+import Helium.Syntax (Expr (..), Span (Span), Type (..), spanOf)
 import Text.Megaparsec
 import Text.Megaparsec.Char (alphaNumChar, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as L
@@ -43,11 +43,28 @@ identifier = lexeme $ do
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
-prefix :: String -> (Expr -> Expr) -> Operator Parser Expr
-prefix name f = Prefix (f <$ symbol name)
+spanned :: Parser a -> Parser (Span, a)
+spanned p = do
+  start <- getSourcePos
+  result <- p
+  end <- getSourcePos
+  pure (Span start end, result)
 
-binary :: String -> (Expr -> Expr -> Expr) -> Operator Parser Expr
-binary name f = InfixL (f <$ symbol name)
+prefix :: String -> (Span -> Expr -> Expr) -> Operator Parser Expr
+prefix name f = Prefix $ do
+  start <- getSourcePos
+  _ <- symbol name
+  pure $ \a -> f (Span start (spanEnd (spanOf a))) a
+  where
+    spanEnd (Span _ e) = e
+
+binary :: String -> (Span -> Expr -> Expr -> Expr) -> Operator Parser Expr
+binary name f = InfixL $ do
+  _ <- symbol name
+  pure $ \a b ->
+    let Span start _ = spanOf a
+        Span _ end = spanOf b
+     in f (Span start end) a b
 
 operatorTable :: [[Operator Parser Expr]]
 operatorTable =
@@ -67,13 +84,26 @@ typeExpr = foldr1 TFun <$> sepBy1 typeAtom (symbol "->")
 -- Expression parsing
 
 atom :: Parser Expr
-atom = parens expr <|> Lit <$> integer <|> Var <$> try identifier
+atom =
+  parens expr
+    <|> (uncurry Lit <$> spanned integer)
+    <|> (uncurry Var <$> spanned (try identifier))
 
 term :: Parser Expr
-term = foldl1 App <$> some atom
+term = foldl1 mkApp <$> some atom
+  where
+    mkApp f a =
+      let Span start _ = spanOf f
+          Span _ end = spanOf a
+       in App (Span start end) f a
+
+withSpan :: (Span -> a -> b -> c -> Expr) -> Parser (a, b, c) -> Parser Expr
+withSpan ex p = do
+  (span_, (x, y, z)) <- spanned p
+  pure $ ex span_ x y z
 
 lambdaExpr :: Parser Expr
-lambdaExpr = do
+lambdaExpr = withSpan Lam $ do
   _ <- symbol "\\"
   _ <- symbol "("
   parameter <- identifier <?> "parameter"
@@ -81,16 +111,18 @@ lambdaExpr = do
   ty <- typeExpr
   _ <- symbol ")"
   _ <- symbol "->"
-  Lam parameter ty <$> expr
+  body <- expr
+  pure (parameter, ty, body)
 
 letExpr :: Parser Expr
-letExpr = do
+letExpr = withSpan Let $ do
   keyword "let"
   name <- identifier <?> "identifier"
   _ <- symbol "="
   definition <- expr
   keyword "in"
-  Let name definition <$> expr
+  body <- expr
+  pure (name, definition, body)
 
 expr :: Parser Expr
 expr = letExpr <|> lambdaExpr <|> makeExprParser term operatorTable
